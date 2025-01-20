@@ -3,7 +3,7 @@ const cors = require("cors");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 // middlewares
 app.use(cors());
@@ -28,9 +28,23 @@ async function run() {
     const postCollection = client.db("socialPod").collection("posts");
 
     // get all posts data
-    app.get("/posts", async (req, res) => {
+    app.get("/post", async (req, res) => {
       const result = await postCollection.find().toArray();
-      res.send(result)
+      res.send(result);
+    });
+
+    // post a new data
+    app.post("/newPost", async (req, res) => {
+      const postData = req.body;
+      const result = await postCollection.insertOne(postData);
+      res.send(result);
+    });
+
+    app.get(`/post/:id`, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await postCollection.findOne(query);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
