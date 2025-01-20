@@ -48,7 +48,16 @@ async function run() {
       res.send(result);
     });
 
-    // get specific post data 
+    // delete a post data
+    app.delete("/deletePost/:id", async (req, res) => {
+      const id = req.params.id;
+    //   console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await postCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // get specific post data
     app.get(`/post/:id`, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
