@@ -61,7 +61,16 @@ async function run() {
     // post comment data
     app.post("/comments", async (req, res) => {
       const commentData = req.body;
-      const result = await commentCollection.insertOne(commentData)
+      const result = await commentCollection.insertOne(commentData);
+      res.send(result);
+    });
+
+    // get comment data
+    app.get("/comments/:title", async (req, res) => {
+      const title = req.params.title;
+      console.log(title);
+      const filter = { title: title };
+      const result = await commentCollection.find(filter).toArray();
       res.send(result)
     });
 
