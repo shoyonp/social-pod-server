@@ -26,6 +26,7 @@ async function run() {
     await client.connect();
 
     const postCollection = client.db("socialPod").collection("posts");
+    const commentCollection = client.db("socialPod").collection("comments");
 
     // get all posts data
     app.get("/post", async (req, res) => {
@@ -51,10 +52,17 @@ async function run() {
     // delete a post data
     app.delete("/deletePost/:id", async (req, res) => {
       const id = req.params.id;
-    //   console.log(id);
+      //   console.log(id);
       const query = { _id: new ObjectId(id) };
       const result = await postCollection.deleteOne(query);
       res.send(result);
+    });
+
+    // post comment data
+    app.post("/comments", async (req, res) => {
+      const commentData = req.body;
+      const result = await commentCollection.insertOne(commentData)
+      res.send(result)
     });
 
     // get specific post data
