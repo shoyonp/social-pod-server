@@ -28,16 +28,35 @@ async function run() {
     const postCollection = client.db("socialPod").collection("posts");
     const commentCollection = client.db("socialPod").collection("comments");
 
+    // post a new data
+    app.post("/newPost", async (req, res) => {
+      const postData = req.body;
+      const result = await postCollection.insertOne(postData);
+      res.send(result);
+    });
+
     // get all posts data
     app.get("/post", async (req, res) => {
       const result = await postCollection.find().toArray();
       res.send(result);
     });
 
-    // post a new data
-    app.post("/newPost", async (req, res) => {
-      const postData = req.body;
-      const result = await postCollection.insertOne(postData);
+    // manage upvote and downvote
+    app.patch("/post/:id", async (req, res) => {
+      const id = req.params.id;
+      const { type } = req.body;
+      const filter = { _id: new ObjectId(id) };
+      let updateDoc = {};
+      if (type === "upVote") {
+        updateDoc = {
+          $inc: { upVote: 1 },
+        };
+      } else {
+        updateDoc = {
+          $inc: { downVote: 1 },
+        };
+      }
+      const result = await postCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
@@ -65,13 +84,20 @@ async function run() {
       res.send(result);
     });
 
-    // get comment data
+    // get specific posts comment data by title
     app.get("/comments/:title", async (req, res) => {
       const title = req.params.title;
-      console.log(title);
       const filter = { title: title };
       const result = await commentCollection.find(filter).toArray();
-      res.send(result)
+      res.send(result);
+    });
+
+    // get specific posts comment data by id
+    app.get("/getComments/:postId", async (req, res) => {
+      const postId = req.params.postId;
+      const filter = { postId: postId };
+      const result = await commentCollection.find(filter).toArray();
+      res.send(result);
     });
 
     // get specific post data
