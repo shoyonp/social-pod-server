@@ -41,6 +41,32 @@ async function run() {
       res.send(result);
     });
 
+    // set user role
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    // get users from database
+    app.get("/users", async (req, res) => {
+      const { search } = req.query;
+      console.log(search);
+      let query = {};
+      if (search) {
+        query = { name: { $regex: search, $options: "i" } };
+      }
+
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // post a new data
     app.post("/newPost", async (req, res) => {
       const postData = req.body;
