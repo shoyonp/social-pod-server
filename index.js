@@ -29,6 +29,9 @@ async function run() {
     const userCollection = client.db("socialPod").collection("users");
     const postCollection = client.db("socialPod").collection("posts");
     const commentCollection = client.db("socialPod").collection("comments");
+    const announcementCollection = client
+      .db("socialPod")
+      .collection("announcements");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -67,7 +70,6 @@ async function run() {
       next();
     };
 
-    // user related apis
     // set user to database
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -121,6 +123,13 @@ async function run() {
         query = { name: { $regex: search, $options: "i" } };
       }
       const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // post  announcement
+    app.post("/announcement", verifyToken, verifyAdmin, async (req, res) => {
+      const data = req.body;
+      const result = await announcementCollection.insertOne(data);
       res.send(result);
     });
 
