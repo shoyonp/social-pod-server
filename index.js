@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -29,6 +30,33 @@ async function run() {
     const postCollection = client.db("socialPod").collection("posts");
     const commentCollection = client.db("socialPod").collection("comments");
 
+    // jwt related api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_SECRET_TOKEN, {
+        expiresIn: "10h",
+      });
+      res.send({ token });
+    });
+
+    // middleware verify the token
+    const verifyToken = (req, res, next) => {
+      console.log("inside verifyToken", req.headers.authorization);
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+      const token = req.headers.authorization.split(" ")[1];
+
+      jwt.verify(token, process.env.ACCESS_SECRET_TOKEN, (error, decoded) => {
+        if (error) {
+          return res.status(401).send({ message: "unauthorized access" });
+        }
+        req.decoded = decoded;
+        next();
+      });
+    };
+
+    // user related apis
     // set user to database
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -55,18 +83,17 @@ async function run() {
     });
 
     // get users from database
-    app.get("/users", async (req, res) => {
+    app.get("/users",verifyToken,  async (req, res) => {
       const { search } = req.query;
-      console.log(search);
       let query = {};
       if (search) {
         query = { name: { $regex: search, $options: "i" } };
       }
-
       const result = await userCollection.find(query).toArray();
       res.send(result);
     });
 
+    // data related apis
     // post a new data
     app.post("/newPost", async (req, res) => {
       const postData = req.body;
