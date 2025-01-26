@@ -126,10 +126,16 @@ async function run() {
       res.send(result);
     });
 
-    // post  announcement
+    // post announcement
     app.post("/announcement", verifyToken, verifyAdmin, async (req, res) => {
       const data = req.body;
       const result = await announcementCollection.insertOne(data);
+      res.send(result);
+    });
+
+    // post announcement
+    app.get("/getAnnouncements", async (req, res) => {
+      const result = await announcementCollection.find().toArray();
       res.send(result);
     });
 
