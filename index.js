@@ -29,6 +29,7 @@ async function run() {
 
     const userCollection = client.db("socialPod").collection("users");
     const postCollection = client.db("socialPod").collection("posts");
+    const tagCollection = client.db("socialPod").collection("tags");
     const commentCollection = client.db("socialPod").collection("comments");
     const announcementCollection = client
       .db("socialPod")
@@ -134,9 +135,22 @@ async function run() {
       res.send(result);
     });
 
-    // post announcement
+    // get announcement
     app.get("/getAnnouncements", async (req, res) => {
       const result = await announcementCollection.find().toArray();
+      res.send(result);
+    });
+
+    // post tags
+    app.post("/tags", verifyToken, verifyAdmin, async (req, res) => {
+      const data = req.body;
+      const result = await tagCollection.insertOne(data);
+      res.send(result);
+    });
+
+    // get tags
+    app.get("/tags", async (req, res) => {
+      const result = await tagCollection.find().toArray();
       res.send(result);
     });
 
