@@ -176,14 +176,28 @@ async function run() {
 
     // get all posts data
     app.get("/post", async (req, res) => {
-      const { search } = req.query;
-      // console.log(search);
-      let query = {};
-      if (search) {
-        query = { tags: { $regex: search, $options: "i" } };
-      }
-      const result = await postCollection.find(query).toArray();
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      // console.log("pagination query", page, size);
+      // const { search } = req.query;
+      // let query = {};
+      // if (search) {
+      //   query = { tags: { $regex: search, $options: "i" } };
+      // }
+      const result = await postCollection
+        .find()
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
+    });
+
+    // get posts count
+    app.get("/postCount", async (req, res) => {
+      const count = await postCollection.estimatedDocumentCount();
+      res.send({
+        count,
+      });
     });
 
     // manage upvote and downvote
