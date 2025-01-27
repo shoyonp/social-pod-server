@@ -154,6 +154,18 @@ async function run() {
       res.send(result);
     });
 
+    // stats or analytics
+    app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
+      const users = await userCollection.estimatedDocumentCount();
+      const posts = await postCollection.estimatedDocumentCount();
+      const comments = await commentCollection.estimatedDocumentCount();
+      res.send({
+        users,
+        posts,
+        comments,
+      });
+    });
+
     // data related apis
     // post a new data
     app.post("/newPost", async (req, res) => {
@@ -164,7 +176,13 @@ async function run() {
 
     // get all posts data
     app.get("/post", async (req, res) => {
-      const result = await postCollection.find().toArray();
+      const { search } = req.query;
+      // console.log(search);
+      let query = {};
+      if (search) {
+        query = { tags: { $regex: search, $options: "i" } };
+      }
+      const result = await postCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -208,6 +226,12 @@ async function run() {
     app.post("/comments", async (req, res) => {
       const commentData = req.body;
       const result = await commentCollection.insertOne(commentData);
+      res.send(result);
+    });
+
+    // get all comments
+    app.get("/comments", async (req, res) => {
+      const result = await commentCollection.find().toArray();
       res.send(result);
     });
 
