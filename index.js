@@ -247,6 +247,20 @@ async function run() {
       res.send(result);
     });
 
+    // get user badge
+    app.get("/user/badge/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const query = { email: email };
+      const result = await userCollection.findOne(query, {
+        projection: { badge: 1, _id: 0 },
+      });
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
