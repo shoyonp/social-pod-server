@@ -178,14 +178,24 @@ async function run() {
     app.get("/post", async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
+      const search = req.query.search || "";
       // console.log("pagination query", page, size);
       // const { search } = req.query;
       // let query = {};
       // if (search) {
       //   query = { tags: { $regex: search, $options: "i" } };
       // }
+
+     console.log("Search Query:", search);
+
+      let query = {};
+      if (search) {
+        query = {
+          tags: { $regex: search, $options: "i" }, // case-insensitive
+        };
+      }
       const result = await postCollection
-        .find()
+        .find(query)
         .skip(page * size)
         .limit(size)
         .toArray();
@@ -299,7 +309,7 @@ async function run() {
     });
 
     // get user badge
-    app.get("/user/badge/:email",verifyToken, async (req, res) => {
+    app.get("/user/badge/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
 
       if (email !== req.decoded.email) {
